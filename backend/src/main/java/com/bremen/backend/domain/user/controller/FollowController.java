@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bremen.backend.domain.user.service.FollowUserService;
-import com.bremen.backend.global.response.SingleResponse;
+import com.bremen.backend.global.response.Response;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,11 +23,11 @@ public class FollowController {
 
 	@GetMapping("/follow")
 	@Operation(summary = "해당 ID를 가진 사람을 팔로우합니다.")
-	public ResponseEntity<SingleResponse<String>> follow(@RequestParam(value = "nickname") String nickname) {
+	public ResponseEntity<Response<String>> follow(@RequestParam(value = "nickname") String nickname) {
 		if (followUserService.followUser(nickname)) {
-			return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "팔로우 성공", ""));
+			return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "팔로우 성공", ""));
 		} else {
-			return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "언팔로우 성공", ""));
+			return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "언팔로우 성공", ""));
 		}
 
 	}

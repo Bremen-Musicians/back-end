@@ -2,6 +2,7 @@ package com.bremen.backend.domain.article.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bremen.backend.domain.article.dto.ArticleResponse;
 import com.bremen.backend.domain.article.repository.ArticleCategory;
 import com.bremen.backend.domain.article.repository.ArticleOrderBy;
 import com.bremen.backend.domain.article.service.SearchService;
-import com.bremen.backend.global.response.ListResponse;
+import com.bremen.backend.global.response.Response;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,15 +36,13 @@ public class SearchController {
 			+ "Order: 최신순(Latest-default)/인기순(Popular), "
 			+ "instrumentIds: 악기id 목록, "
 			+ "keyword: 검색어")
-	ResponseEntity<ListResponse> articlesSearch(
+	ResponseEntity<Response<Page>> articlesSearch(
 		@RequestParam(defaultValue = "ALL") ArticleCategory category,
 		@RequestParam(defaultValue = "POPULAR") ArticleOrderBy order,
 		@RequestParam(required = false) List<Long> instrumentIds,
 		@RequestParam(value = "keyword", required = false) String keyword,
 		Pageable pageable) {
-		ListResponse listResponse = searchService.searchArticle(category, order, instrumentIds, keyword, pageable);
-		listResponse.setStatus(HttpStatus.OK.value());
-		listResponse.setMessage("게시글 검색 성공");
-		return ResponseEntity.ok(listResponse);
+		Page<ArticleResponse> responses = searchService.searchArticle(category, order, instrumentIds, keyword, pageable);
+		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(),"게시글 검색 성공",responses));
 	}
 }

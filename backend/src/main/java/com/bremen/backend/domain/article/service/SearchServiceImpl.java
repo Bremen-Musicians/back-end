@@ -1,7 +1,6 @@
 package com.bremen.backend.domain.article.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +13,6 @@ import com.bremen.backend.domain.article.mapper.ArticleMapper;
 import com.bremen.backend.domain.article.repository.ArticleCategory;
 import com.bremen.backend.domain.article.repository.ArticleOrderBy;
 import com.bremen.backend.domain.article.repository.ArticleSearchQueryDslRepository;
-import com.bremen.backend.global.response.ListResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,16 +23,11 @@ public class SearchServiceImpl implements SearchService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ListResponse searchArticle(ArticleCategory category, ArticleOrderBy order, List<Long> instrumentIds,
-		String keyword,
-		Pageable pageable) {
-		Page<Article> pages = articleSearchQueryDslRepository.searchAll(category, order, instrumentIds, keyword,
-			pageable);
+	public Page<ArticleResponse> searchArticle(ArticleCategory category, ArticleOrderBy order, List<Long> instrumentIds,
+		String keyword, Pageable pageable) {
 
-		List<ArticleResponse> articles = pages.getContent()
-			.stream()
-			.map(ArticleMapper.INSTANCE::articleToArticleResponse)
-			.collect(Collectors.toList());
-		return new ListResponse(articles, pages.getTotalElements(), pages.getPageable());
+		Page<Article> pages = articleSearchQueryDslRepository.searchAll(category, order, instrumentIds, keyword, pageable);
+
+		return pages.map(ArticleMapper.INSTANCE::articleToArticleResponse);
 	}
 }

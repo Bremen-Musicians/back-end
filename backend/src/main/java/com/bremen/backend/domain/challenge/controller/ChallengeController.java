@@ -21,8 +21,7 @@ import com.bremen.backend.domain.challenge.dto.ChallengeArticleResponse;
 import com.bremen.backend.domain.challenge.dto.ChallengeRequest;
 import com.bremen.backend.domain.challenge.dto.ChallengeResponse;
 import com.bremen.backend.domain.challenge.service.ChallengeService;
-import com.bremen.backend.global.response.ListResponse;
-import com.bremen.backend.global.response.SingleResponse;
+import com.bremen.backend.global.response.Response;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,48 +39,45 @@ public class ChallengeController {
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "챌린지를 등록합니다.", description = "챌린지 곡, 일정, 챌린지 내용을 입력받아 챌린지를 등록합니다.")
-	ResponseEntity<SingleResponse<ChallengeResponse>> challengeAdd(
+	ResponseEntity<Response<ChallengeResponse>> challengeAdd(
 		@Valid @RequestPart(value = "challengeInfo") ChallengeRequest challengeRequest,
 		@RequestPart(value = "mainImage") MultipartFile mainImage,
 		@RequestPart(value = "challengeImage") MultipartFile challengeImage) throws IOException {
 		ChallengeResponse challengeResponse = challengeService.addChallenge(challengeRequest, mainImage,
 			challengeImage);
-		return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "챌린지가 정상적으로 등록되었습니다.", challengeResponse));
+		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "챌린지가 정상적으로 등록되었습니다.", challengeResponse));
 	}
 
 	@GetMapping("/latest")
 	@Operation(summary = "최신 챌린지를 조회합니다.", description = "가장 최근에 등록된 챌린지를 조회합니다.")
-	ResponseEntity<SingleResponse<ChallengeResponse>> challengeDetailsLatest() {
+	ResponseEntity<Response<ChallengeResponse>> challengeDetailsLatest() {
 		ChallengeResponse challengeResponse = challengeService.findLatestChallengeResponse();
 		return ResponseEntity.ok(
-			new SingleResponse<>(HttpStatus.OK.value(), "최신 챌린지를 정상적으로 조회하였습니다.", challengeResponse));
+			new Response<>(HttpStatus.OK.value(), "최신 챌린지를 정상적으로 조회하였습니다.", challengeResponse));
 	}
 
 	@GetMapping("/ensembles")
 	@Operation(summary = "지난 챌린지 합주 영상을 조회합니다.")
-	ResponseEntity<ListResponse> challengesEnsemble(Pageable pageable) {
+	ResponseEntity<Response<Page>> challengesEnsemble(Pageable pageable) {
 		Page<ChallengeArticleResponse> articles = challengeService.findChallengeEnsemble(pageable);
 		return ResponseEntity.ok(
-			new ListResponse(HttpStatus.OK.value(), "지난 챌린지 선정 게시글 조회 성공", articles.getContent(),
-				articles.getTotalElements(),
-				articles.getPageable()));
+			new Response<>(HttpStatus.OK.value(), "지난 챌린지 선정 게시글 조회 성공", articles)
+		);
 	}
 
 	@GetMapping()
 	@Operation(summary = "챌린지 영상 조회")
-	ResponseEntity<ListResponse> challengesList(@RequestParam(required = false) Long instrumentId, Pageable pageable) {
+	ResponseEntity<Response<Page>> challengesList(@RequestParam(required = false) Long instrumentId, Pageable pageable) {
 		Page<ArticleListResponse> articles = challengeService.findChallengeArticle(instrumentId, pageable);
 		return ResponseEntity.ok(
-			new ListResponse(HttpStatus.OK.value(), "챌린지 영상 조회 성공", articles.getContent(),
-				articles.getTotalElements(),
-				articles.getPageable()));
+			new Response<>(HttpStatus.OK.value(), "챌린지 영상 조회 성공", articles));
 	}
 
 	@GetMapping("/winners")
 	@Operation(summary = "악기별 1위 챌린지 게시글 조회")
-	ResponseEntity<SingleResponse<List<ArticleListResponse>>> challengesWinner() {
+	ResponseEntity<Response<List<ArticleListResponse>>> challengesWinner() {
 		List<ArticleListResponse> articles = challengeService.findChallengeWinner();
-		return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "챌린지 우수자의 게시글이 조회되었습니다.", articles));
+		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "챌린지 우수자의 게시글이 조회되었습니다.", articles));
 	}
 
 }

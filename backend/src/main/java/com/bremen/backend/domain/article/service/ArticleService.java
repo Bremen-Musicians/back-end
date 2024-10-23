@@ -11,7 +11,6 @@ import com.bremen.backend.domain.article.dto.ArticleUpdateRequest;
 import com.bremen.backend.domain.article.entity.Article;
 import com.bremen.backend.domain.article.repository.ArticleOrderBy;
 import com.bremen.backend.domain.video.entity.Video;
-import com.bremen.backend.global.response.ListResponse;
 
 public interface ArticleService {
 
@@ -29,9 +28,9 @@ public interface ArticleService {
 
 	Page<ArticleResponse> findArticleByNickname(String nickname, Pageable pageable);
 
-	ListResponse findArticle(ArticleOrderBy articleOrderBy, Pageable pageable);
+	Page<ArticleResponse> findArticle(ArticleOrderBy articleOrderBy, Pageable pageable);
 
-	ListResponse findRelatedArticle(Long id, Pageable pageable);
+	Page<ArticleResponse> findRelatedArticle(Long id, Pageable pageable);
 
 	Article findArticlesByVideo(Video video);
 

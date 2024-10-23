@@ -27,7 +27,6 @@ import com.bremen.backend.domain.video.service.EnsembleService;
 import com.bremen.backend.domain.video.service.VideoService;
 import com.bremen.backend.global.CustomException;
 import com.bremen.backend.global.response.ErrorCode;
-import com.bremen.backend.global.response.ListResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -126,32 +125,25 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ListResponse findArticle(ArticleOrderBy articleOrderBy, Pageable pageable) {
+	public Page<ArticleResponse> findArticle(ArticleOrderBy articleOrderBy, Pageable pageable) {
 		LocalDateTime dateTime = LocalDateTime.now().minusDays(7);
 		Page<Article> pages;
+
 		if (userService.isAuthenticated()) {
 			User user = userService.getUserByToken();
-			pages = articleQueryDslRepository.findArticle(user.getId(), articleOrderBy, dateTime,
-				pageable);
+			pages = articleQueryDslRepository.findArticle(user.getId(), articleOrderBy, dateTime, pageable);
 		} else {
 			pages = articleQueryDslRepository.findArticle(articleOrderBy, dateTime, pageable);
 		}
-		List<ArticleResponse> articles = pages.getContent()
-			.stream()
-			.map(ArticleMapper.INSTANCE::articleToArticleResponse)
-			.collect(Collectors.toList());
-		return new ListResponse(articles, pages.getTotalElements(), pages.getPageable());
+
+		return pages.map(ArticleMapper.INSTANCE::articleToArticleResponse);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ListResponse findRelatedArticle(Long id, Pageable pageable) {
+	public Page<ArticleResponse> findRelatedArticle(Long id, Pageable pageable) {
 		Page<Article> pages = articleQueryDslRepository.findRelatedArticle(id, pageable);
-		List<ArticleResponse> articles = pages.getContent()
-			.stream()
-			.map(ArticleMapper.INSTANCE::articleToArticleResponse)
-			.collect(Collectors.toList());
-		return new ListResponse(articles, pages.getTotalElements(), pages.getPageable());
+		return pages.map(ArticleMapper.INSTANCE::articleToArticleResponse);
 	}
 
 	@Override

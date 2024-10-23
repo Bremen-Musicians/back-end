@@ -1,5 +1,7 @@
 package com.bremen.backend.domain.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -18,6 +20,7 @@ public class UserRegistrationRequest {
 	@NotBlank(message = "닉네임은 비어있을 수 없습니다")
 	private String nickname;
 
+	@JsonProperty("isAgree")
 	@NotBlank(message = "동의여부는 비어있을 수 없습니다")
 	private boolean isAgree;
 }

@@ -1,9 +1,6 @@
 package com.bremen.backend.domain.notification.service;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,7 +15,6 @@ import com.bremen.backend.domain.user.entity.User;
 import com.bremen.backend.domain.user.service.UserService;
 import com.bremen.backend.global.CustomException;
 import com.bremen.backend.global.response.ErrorCode;
-import com.bremen.backend.global.response.ListResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,14 +35,15 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ListResponse getNotification(Pageable pageable) {
+	public Page<NotificationDto> getNotification(Pageable pageable) {
+		// 사용자 토큰을 이용해 username을 가져옴
 		String username = userService.getUserByToken().getUsername();
+
+		// 페이징된 Notification 엔티티 목록을 가져옴
 		Page<Notification> pages = notificationRepository.findByUser(username, pageable);
-		List<NotificationDto> notificationDtos = pages.getContent()
-			.stream()
-			.map(NotificationMapper.INSTANCE::entityToDto)
-			.collect(Collectors.toList());
-		return new ListResponse<>(notificationDtos, pages.getTotalElements(), pages.getPageable());
+
+		// Page<Notification>을 Page<NotificationDto>로 변환하여 반환
+		return pages.map(NotificationMapper.INSTANCE::entityToDto);
 	}
 
 	public Notification getNotification(Long id) {

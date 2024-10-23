@@ -1,8 +1,5 @@
 package com.bremen.backend.domain.video.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,7 +10,6 @@ import com.bremen.backend.domain.video.mapper.MusicMapper;
 import com.bremen.backend.domain.video.repository.MusicRepository;
 import com.bremen.backend.global.CustomException;
 import com.bremen.backend.global.response.ErrorCode;
-import com.bremen.backend.global.response.ListResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,12 +24,11 @@ public class MusicServiceImpl implements MusicService {
 	}
 
 	@Override
-	public ListResponse searchMusicsByTitle(String title, Pageable pageable) {
+	public Page<MusicResponse> searchMusicsByTitle(String title, Pageable pageable) {
+		// 페이징된 Music 엔티티 목록을 가져옴
 		Page<Music> pages = musicRepository.findByTitleContaining(title, pageable);
-		List<MusicResponse> musics = pages.getContent()
-			.stream()
-			.map(MusicMapper.INSTANCE::musicToMusicResponse)
-			.collect(Collectors.toList());
-		return new ListResponse(musics, pages.getTotalElements(), pages.getPageable());
+
+		// Page<Music>을 Page<MusicResponse>로 변환하여 반환
+		return pages.map(MusicMapper.INSTANCE::musicToMusicResponse);
 	}
 }

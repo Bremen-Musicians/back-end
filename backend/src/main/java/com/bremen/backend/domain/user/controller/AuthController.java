@@ -14,7 +14,7 @@ import com.bremen.backend.domain.user.dto.UserLoginResponse;
 import com.bremen.backend.domain.user.dto.UserReissueResponse;
 import com.bremen.backend.domain.user.service.AuthService;
 import com.bremen.backend.domain.user.service.ReissueService;
-import com.bremen.backend.global.response.SingleResponse;
+import com.bremen.backend.global.response.Response;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,24 +30,24 @@ public class AuthController {
 
 	@PostMapping("/login")
 	@Operation(summary = "로그인을 합니다.")
-	public ResponseEntity<SingleResponse<UserLoginResponse>> login(@RequestBody UserLoginRequest userLoginRequest) {
+	public ResponseEntity<Response<UserLoginResponse>> login(@RequestBody UserLoginRequest userLoginRequest) {
 		UserLoginResponse userLoginResponse = authService.login(userLoginRequest);
-		return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "로그인 성공", userLoginResponse));
+		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "로그인 성공", userLoginResponse));
 	}
 
 	@GetMapping("/logout")
 	@Operation(summary = "로그아웃을 합니다.")
-	public ResponseEntity<SingleResponse<String>> logout(@RequestHeader("Authorization") String accessToken,
+	public ResponseEntity<Response<String>> logout(@RequestHeader("Authorization") String accessToken,
 		@RequestHeader("Refresh-Token") String refreshToken) {
 		authService.logout(accessToken, refreshToken);
-		return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "logout 성공!", ""));
+		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "logout 성공!", ""));
 	}
 
 	@GetMapping("/reissue")
 	@Operation(summary = "토큰을 재발급합니다.", description = "액세스 토큰이 만료된 경우 리프레쉬 토큰을 이용하여 토큰을 재발급합니다.")
-	public ResponseEntity<SingleResponse<UserReissueResponse>> tokenReissue(
+	public ResponseEntity<Response<UserReissueResponse>> tokenReissue(
 		@RequestHeader("Refresh-Token") String refreshToken) {
 		UserReissueResponse userReissueResponse = reissueService.reissueAccessToken(refreshToken);
-		return ResponseEntity.ok(new SingleResponse<>(HttpStatus.OK.value(), "새로운 액세스 토큰 발급 성공!", userReissueResponse));
+		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "새로운 액세스 토큰 발급 성공!", userReissueResponse));
 	}
 }

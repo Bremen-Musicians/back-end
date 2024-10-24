@@ -42,7 +42,7 @@ public class SecurityConfig {
 	};
 
 	private static final String[] POST_PERMIT_URL_ARRAY = {
-		HEAD + "/users"
+		HEAD + "/users/**"
 	};
 
 	@Bean

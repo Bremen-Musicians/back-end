@@ -28,32 +28,41 @@ public class JwtFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
-		String token = jwtTokenUtil.extractToken(request);
+
+		String token = extractToken(request);
 
 		if (token != null) {
 			try {
-				jwtTokenUtil.isLogoutToken(token); // 이미 로그아웃 된 토큰일 경우 여기에서 throw exception
-				if (jwtTokenUtil.validateToken(token)) {
-					// 액세스 토큰의 만료기간이 다되었는지 확인하자
-					String username = jwtTokenUtil.extractUsername(token);
-					request.setAttribute("username", username);
-					UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-					Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(),
-						userDetails.getPassword(), userDetails.getAuthorities());
-					SecurityContextHolder.getContext().setAuthentication(authentication);
-					response.setHeader("Expired-Token", "false");
-				} else {
-					throw new IllegalArgumentException("유효하지 않은 토큰입니다");
-				}
+				validateToken(token); // 토큰 유효성 검사
+				setAuthentication(token); // 인증 객체 설정
+				response.setHeader("Expired-Token", "false");
+
 			} catch (ExpiredJwtException e) {
 				response.setHeader("Expired-Token", "true");
 				throw e;
-				//토큰의 기간이 만료되었음을 알려주자
 			}
-
 		}
 
 		filterChain.doFilter(request, response);
+	}
+
+	private String extractToken(HttpServletRequest request) {
+		return jwtTokenUtil.extractToken(request);
+	}
+
+	private void validateToken(String token) {
+		jwtTokenUtil.isLogoutToken(token); // 로그아웃 토큰 검사
+		if (!jwtTokenUtil.validateToken(token)) {
+			throw new IllegalArgumentException("유효하지 않은 토큰입니다");
+		}
+	}
+
+	private void setAuthentication(String token) {
+		String username = jwtTokenUtil.extractUsername(token); // 토큰에서 유저네임 추출
+		UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+			userDetails, token, userDetails.getAuthorities());
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
 
 }

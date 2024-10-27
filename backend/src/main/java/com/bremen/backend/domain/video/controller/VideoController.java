@@ -5,12 +5,14 @@ import java.io.IOException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.domain.video.dto.VideoRequest;
 import com.bremen.backend.domain.video.dto.VideoResponse;
 import com.bremen.backend.domain.video.service.VideoService;
@@ -32,11 +34,13 @@ public class VideoController {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "영상 정보를 등록합니다.", description = "영상과 영상정보를 입력받아 영상 데이터를 등록합니다.")
 	ResponseEntity<Response<VideoResponse>> videoAdd(
+		@AuthenticationPrincipal PrincipalDetails principalDetails,
 		@RequestPart(value = "videoInfo") VideoRequest videoRequest,
 		@RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
 		@RequestPart(value = "video") MultipartFile video,
 		@RequestPart(value = "highlight", required = false) MultipartFile highlight) throws IOException {
-		VideoResponse videoResponse = videoService.addVideo(videoRequest, thumbnail, video, highlight);
+		VideoResponse videoResponse = videoService.addVideo(principalDetails, videoRequest, thumbnail,
+			video, highlight);
 		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "동영상이 정상적으로 등록되었습니다.", videoResponse));
 	}
 }

@@ -7,6 +7,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.bremen.backend.domain.notification.entity.NotificationType;
 import com.bremen.backend.domain.notification.repository.EmitterRepository;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.global.CustomException;
 import com.bremen.backend.global.response.ErrorCode;
 
@@ -34,8 +35,9 @@ public class EmitterServiceImpl implements EmitterService {
 	}
 
 	@Override
-	public SseEmitter connectAlarm(String username) {
+	public SseEmitter connectAlarm(PrincipalDetails principalDetails) {
 		SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT);
+		String username = principalDetails.getUsername();
 		emitterRepository.save(username, sseEmitter);
 
 		// 종료 되었을 때 처리

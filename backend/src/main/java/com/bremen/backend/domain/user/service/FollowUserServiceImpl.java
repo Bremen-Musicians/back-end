@@ -9,6 +9,7 @@ import com.bremen.backend.domain.notification.NotificationDto;
 import com.bremen.backend.domain.notification.entity.NotificationType;
 import com.bremen.backend.domain.notification.service.EmitterService;
 import com.bremen.backend.domain.notification.service.NotificationService;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.domain.user.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -16,15 +17,15 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class FollowUserServiceImpl implements FollowUserService {
-	private final UserService userService;
 	private final FollowService followService;
 	private final EmitterService emitterService;
 	private final NotificationService notificationService;
+	private final UserService userService;
 
 	@Override
 	@Transactional
-	public boolean followUser(String nickname) {
-		User follower = userService.getUserByToken(); // 토큰으로 현재 로그인한 유저 조회
+	public boolean followUser(PrincipalDetails principalDetails, String nickname) {
+		User follower = principalDetails.getUser(); // 토큰으로 현재 로그인한 유저 조회
 		User follow = userService.getUserByNickname(nickname);
 
 		boolean isExist = followService.isFollower(follow, follower);
@@ -44,7 +45,7 @@ public class FollowUserServiceImpl implements FollowUserService {
 			.content(message)
 			.type(type)
 			.build();
-		notificationService.addNotification(notificationDto, username);
+		notificationService.addNotification(principalDetails, notificationDto);
 		emitterService.send(null, username, message, type);
 		return !isExist;
 

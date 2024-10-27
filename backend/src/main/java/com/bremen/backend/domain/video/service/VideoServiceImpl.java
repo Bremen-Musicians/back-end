@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bremen.backend.domain.user.service.UserService;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.domain.video.dto.VideoRequest;
 import com.bremen.backend.domain.video.dto.VideoResponse;
 import com.bremen.backend.domain.video.entity.Video;
@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VideoServiceImpl implements VideoService {
 	private final VideoRepository videoRepository;
-	private final UserService userService;
 	private final S3Service s3Service;
 	private final EnsembleService ensembleService;
 	private final MusicService musicService;
@@ -41,13 +40,14 @@ public class VideoServiceImpl implements VideoService {
 
 	@Override
 	@Transactional
-	public VideoResponse addVideo(VideoRequest videoRequest, MultipartFile thumbnailFile, MultipartFile videoFile,
+	public VideoResponse addVideo(PrincipalDetails principalDetails, VideoRequest videoRequest,
+		MultipartFile thumbnailFile, MultipartFile videoFile,
 		MultipartFile highlightFile) throws
 		IOException {
 
 		Video video = VideoMapper.INSTANCE.videoRequestToVideo(videoRequest);
 
-		video.setSavedVideo(userService.getUserByToken(),
+		video.setSavedVideo(principalDetails.getUser(),
 			thumbnailFile == null || thumbnailFile.isEmpty() ? null :
 				s3Service.streamUpload("thumbnail", thumbnailFile),
 			musicService.getMusicById(videoRequest.getMusicId()),

@@ -8,15 +8,16 @@ import com.bremen.backend.domain.article.dto.CommentRequest;
 import com.bremen.backend.domain.article.dto.CommentResponse;
 import com.bremen.backend.domain.article.dto.CommentUpdateRequest;
 import com.bremen.backend.domain.article.entity.Comment;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 
 public interface CommentService {
 	Comment getCommentById(Long commentId);
 
-	CommentResponse addComment(CommentRequest commentRequest);
+	CommentResponse addComment(PrincipalDetails principalDetails, CommentRequest commentRequest);
 
-	CommentResponse modifyComment(CommentUpdateRequest commentRequest);
+	CommentResponse modifyComment(PrincipalDetails principalDetails, CommentUpdateRequest commentRequest);
 
-	Long removeComment(Long id);
+	Long removeComment(PrincipalDetails principalDetails, Long id);
 
 	Page<CommentRelationResponse> findCommentsByArticleId(Long id, Pageable pageable);
 }

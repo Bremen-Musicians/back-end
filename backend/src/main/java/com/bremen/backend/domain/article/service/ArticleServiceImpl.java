@@ -20,6 +20,7 @@ import com.bremen.backend.domain.article.repository.ArticleQueryRepository;
 import com.bremen.backend.domain.article.repository.ArticleRepository;
 import com.bremen.backend.domain.challenge.service.ChallengeArticleService;
 import com.bremen.backend.domain.challenge.service.ChallengeService;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.domain.user.entity.User;
 import com.bremen.backend.domain.user.service.UserService;
 import com.bremen.backend.domain.video.entity.Video;
@@ -47,13 +48,13 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ArticleResponse findArticleById(Long articleId) {
+	public ArticleResponse findArticleById(PrincipalDetails principalDetails, Long articleId) {
 		Article article = getArticleById(articleId);
 		article.viewArticle();
 		ArticleResponse articleResponse = ArticleMapper.INSTANCE.articleToArticleResponse(article);
 
-		if (userService.isAuthenticated()) {
-			Long userId = userService.getUserByToken().getId();
+		if (principalDetails != null) {
+			Long userId = principalDetails.getUser().getId();
 			boolean isLike = likeService.isLikeArticle(userId, articleId);
 			articleResponse.setLike(isLike);
 		}
@@ -68,9 +69,9 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional
-	public ArticleResponse addArticle(ArticleRequest articleRequest) {
+	public ArticleResponse addArticle(PrincipalDetails principalDetails, ArticleRequest articleRequest) {
 		Article article = ArticleMapper.INSTANCE.articleRequestToArticle(articleRequest);
-		User user = userService.getUserByToken();
+		User user = principalDetails.getUser();
 		Video video = videoService.getVideoById(articleRequest.getVideoId());
 		article.saveArticle(user, video);
 		Article savedArticle = articleRepository.save(article);
@@ -87,7 +88,7 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional
-	public ArticleResponse modifyArticle(ArticleUpdateRequest articleUpdateRequest) {
+	public ArticleResponse modifyArticle(PrincipalDetails principalDetails, ArticleUpdateRequest articleUpdateRequest) {
 		Article article = getArticleById(articleUpdateRequest.getId());
 		article.modifyArticle(articleUpdateRequest.getTitle(), articleUpdateRequest.getContent());
 		ArticleResponse articleResponse = ArticleMapper.INSTANCE.articleToArticleResponse(article);
@@ -97,9 +98,9 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional
-	public Long removeArticle(Long id) {
+	public Long removeArticle(PrincipalDetails principalDetails, Long id) {
 		Article article = getArticleById(id);
-		User user = userService.getUserByToken();
+		User user = principalDetails.getUser();
 		if (!article.getUser().getId().equals(user.getId())) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_ARTICLE_ACCESS);
 		}
@@ -125,12 +126,13 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<ArticleResponse> findArticle(ArticleOrderBy articleOrderBy, Pageable pageable) {
+	public Page<ArticleResponse> findArticle(PrincipalDetails principalDetails, ArticleOrderBy articleOrderBy,
+		Pageable pageable) {
 		LocalDateTime dateTime = LocalDateTime.now().minusDays(7);
 		Page<Article> pages;
 
-		if (userService.isAuthenticated()) {
-			User user = userService.getUserByToken();
+		if (principalDetails != null) {
+			User user = principalDetails.getUser();
 			pages = articleQueryDslRepository.findArticle(user.getId(), articleOrderBy, dateTime, pageable);
 		} else {
 			pages = articleQueryDslRepository.findArticle(articleOrderBy, dateTime, pageable);
@@ -153,8 +155,9 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Override
 	@Transactional
-	public ArticleResponse addChallengeEnsembleArticle(ArticleRequest articleRequest) {
-		ArticleResponse articleResponse = addArticle(articleRequest);
+	public ArticleResponse addChallengeEnsembleArticle(PrincipalDetails principalDetails,
+		ArticleRequest articleRequest) {
+		ArticleResponse articleResponse = addArticle(principalDetails, articleRequest);
 		Article article = getArticleById(articleResponse.getId());
 		challengeService.registEnsemble(article);
 		challengeArticleService.regiestWinners(

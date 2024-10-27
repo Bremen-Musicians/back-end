@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bremen.backend.domain.article.entity.Article;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.domain.user.entity.User;
-import com.bremen.backend.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,13 +13,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ArticleLikeServiceImpl implements ArticleLikeService {
 	private final ArticleService articleService;
-	private final UserService userService;
 	private final LikeService likeService;
 
 	@Transactional
-	public int toggleLikeArticle(Long id) {
+	public int toggleLikeArticle(PrincipalDetails principalDetails, Long id) {
 		Article article = articleService.getArticleById(id);
-		User user = userService.getUserByToken();
+		User user = principalDetails.getUser();
 
 		if (likeService.isLikeArticle(user.getId(), article.getId())) {
 			likeService.unlikeArticle(user, article);

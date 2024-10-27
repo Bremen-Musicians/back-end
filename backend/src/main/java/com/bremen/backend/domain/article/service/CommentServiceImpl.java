@@ -19,8 +19,8 @@ import com.bremen.backend.domain.article.entity.Article;
 import com.bremen.backend.domain.article.entity.Comment;
 import com.bremen.backend.domain.article.mapper.CommentMapper;
 import com.bremen.backend.domain.article.repository.CommentRepository;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.domain.user.entity.User;
-import com.bremen.backend.domain.user.service.UserService;
 import com.bremen.backend.global.CustomException;
 import com.bremen.backend.global.response.ErrorCode;
 
@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 	private final CommentRepository commentRepository;
-	private final UserService userService;
 	private final ArticleService articleService;
 
 	@Override
@@ -41,9 +40,9 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	@Transactional
-	public CommentResponse addComment(CommentRequest commentRequest) {
+	public CommentResponse addComment(PrincipalDetails principalDetails, CommentRequest commentRequest) {
 		Comment comment = CommentMapper.INSTANCE.commentRequestToComment(commentRequest);
-		User user = userService.getUserByToken();
+		User user = principalDetails.getUser();
 		Article article = articleService.getArticleById(commentRequest.getArticleId());
 		if (commentRequest.getGroupId() != null) {
 			comment.saveComment(user, article, getCommentById(commentRequest.getGroupId()));
@@ -55,18 +54,18 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	@Transactional
-	public CommentResponse modifyComment(CommentUpdateRequest commentRequest) {
+	public CommentResponse modifyComment(PrincipalDetails principalDetails, CommentUpdateRequest commentRequest) {
 		Comment comment = getCommentById(commentRequest.getId());
-		checkCommentAccessRights(comment.getUser());
+		checkCommentAccessRights(comment.getUser(), principalDetails);
 		comment.modifyContent(commentRequest.getContent());
 		return CommentMapper.INSTANCE.commentToCommentResponse(comment);
 	}
 
 	@Override
 	@Transactional
-	public Long removeComment(Long id) {
+	public Long removeComment(PrincipalDetails principalDetails, Long id) {
 		Comment comment = getCommentById(id);
-		checkCommentAccessRights(comment.getUser());
+		checkCommentAccessRights(comment.getUser(), principalDetails);
 
 		if (isParentComment(comment)) {
 			deleteParentComment(comment);
@@ -102,8 +101,8 @@ public class CommentServiceImpl implements CommentService {
 		return new PageImpl<>(result, pageable, commentsPage.getTotalElements());
 	}
 
-	private void checkCommentAccessRights(User user) {
-		if (!user.equals(userService.getUserByToken())) {
+	private void checkCommentAccessRights(User user, PrincipalDetails principalDetails) {
+		if (!user.equals(principalDetails.getUser())) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_COMMENT_ACCESS);
 		}
 	}

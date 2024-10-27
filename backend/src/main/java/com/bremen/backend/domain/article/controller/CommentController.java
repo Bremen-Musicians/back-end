@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +19,7 @@ import com.bremen.backend.domain.article.dto.CommentRequest;
 import com.bremen.backend.domain.article.dto.CommentResponse;
 import com.bremen.backend.domain.article.dto.CommentUpdateRequest;
 import com.bremen.backend.domain.article.service.CommentService;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 import com.bremen.backend.global.response.Response;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,23 +38,26 @@ public class CommentController {
 
 	@PostMapping()
 	@Operation(summary = "댓글을 등록합니다.", description = "댓글의 내용, 게시글의 id값 대댓글인 경우 부모댓글의 id를 파라미터로 받습니다.")
-	ResponseEntity<Response<CommentResponse>> commentAdd(@Valid @RequestBody CommentRequest commentRequest) {
-		CommentResponse commentResponse = commentService.addComment(commentRequest);
+	ResponseEntity<Response<CommentResponse>> commentAdd(@AuthenticationPrincipal PrincipalDetails principalDetails,
+		@Valid @RequestBody CommentRequest commentRequest) {
+		CommentResponse commentResponse = commentService.addComment(principalDetails, commentRequest);
 		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "댓글 등록 성공", commentResponse));
 	}
 
 	@PatchMapping()
 	@Operation(summary = "댓글을 수정합니다.", description = "댓글의 id값과 내용을 파라미터로 받습니다.")
 	ResponseEntity<Response<CommentResponse>> commentModify(
+		@AuthenticationPrincipal PrincipalDetails principalDetails,
 		@Valid @RequestBody CommentUpdateRequest commentRequest) {
-		CommentResponse commentResponse = commentService.modifyComment(commentRequest);
+		CommentResponse commentResponse = commentService.modifyComment(principalDetails, commentRequest);
 		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "댓글 수정 성공", commentResponse));
 	}
 
 	@DeleteMapping()
 	@Operation(summary = "댓글을 삭제합니다.", description = "댓글의 id값을 파라미터로 받습니다.")
-	ResponseEntity<Response<Long>> commentRemove(@RequestParam("id") Long id) {
-		Long commentId = commentService.removeComment(id);
+	ResponseEntity<Response<Long>> commentRemove(@AuthenticationPrincipal PrincipalDetails principalDetails,
+		@RequestParam("id") Long id) {
+		Long commentId = commentService.removeComment(principalDetails, id);
 		return ResponseEntity.ok(new Response<>(HttpStatus.OK.value(), "댓글 삭제 성공", commentId));
 	}
 

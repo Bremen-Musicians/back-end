@@ -6,12 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.bremen.backend.domain.notification.NotificationDto;
+import com.bremen.backend.domain.user.entity.PrincipalDetails;
 
 public interface NotificationService {
-	void addNotification(NotificationDto notification, String username);
+	void addNotification(PrincipalDetails principalDetails, NotificationDto notification);
 
-	Page<NotificationDto> getNotification(Pageable pageable);
+	Page<NotificationDto> getNotification(PrincipalDetails principalDetails, Pageable pageable);
 
-	Long deleteNotification(ArrayList<Long> ids);
-	
+	Long deleteNotification(PrincipalDetails principalDetails, ArrayList<Long> ids);
+
 }

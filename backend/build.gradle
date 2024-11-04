@@ -73,6 +73,9 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
 
 
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' // 직렬화를 위한 모듈
+
+
 }
 
 tasks.named('test') {
